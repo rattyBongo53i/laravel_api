@@ -172,49 +172,77 @@ class FinanceController extends Controller
     Invoice
 /****************************** */
 
-//store new invoice
-    public function storeInvoice(Request $request)
-    {
+public function storeInvoice(Request $request)
+{
+    // Validate request data
+    $this->validate($request, [
+        'due_date' => 'required|date|after:today',
+    ]);
 
-          // Generate a unique invoice ID using current datetime and hash it
-           $currentDateTime = Carbon::now()->toDateTimeString(); // Get current date and time
-           $invoiceId = substr(md5($currentDateTime), 0, 10); // Hash and take the first 10 characters
 
-           if($request->isSent){
-             $issue_date = Carbon::now()->toDateTimeString(); // Get current date and time
-           } else {
-             $issue_date = null;
-           }
-    
-        $invoice = new Invoice();
-        $invoice->invoice_id = $invoiceId;
-        $invoice->student_id = $request->student_id;
-        $invoice->due_date = $request->due_date;
-        $invoice->issue_date = $issue_date;
-        $invoice->student_name = $request->student_name;
-        $invoice->total_amount = $request->totalFeeAmount;
-        $invoice->notes = $request->note;
-        $invoice->created_at = Carbon::now();
-        $invoice->save();
-
-        $invoice = Invoice::where('id', $invoice->id)->first();
-        if($invoice->id){
-
-                // Create the fees for the invoice
-    foreach ($request['fees'] as $fee) {
-        InvoiceFees::create([
-            'invoice_id' => $invoice->id,
-            'name' => $fee['name'],
-            'amount' => $fee['amount'],
-            'fee_id' => $fee['id'],
-            'invoice_uuid' => $invoice->invoice_id,
-        ]);
+    // if student is null retrun 
+    if ($request->student_id == '' || $request->student_id == null){
+        return response()->json(['message' => 'Student ID is required'], 401);
     }
-            
-        return response()->json($invoice, 201);
+
+
+    // Generate a unique invoice ID using current datetime and hash
+  if (empty($request->fees) || !is_array($request->fees) || count($request->fees) === 0) {
+        return response()->json(['message' => 'no fees added'], 400);
+    }
+    // Generate a unique invoice ID using current datetime and hash it
+    $currentDateTime = Carbon::now()->toDateTimeString(); // Get current date and time
+    $invoiceId = substr(md5($currentDateTime), 0, 10); // Hash and take the first 10 characters
+
+    // Determine the issue date based on whether the invoice is sent
+    $issue_date = $request->isSent ? Carbon::now()->toDateTimeString() : null;
+
+    // Check if an invoice with the same student_id, due_date, and total_amount already exists
+    $existingInvoice = Invoice::where('student_id', $request->student_id)
+                        ->where('due_date', $request->due_date)
+                        ->where('total_amount', $request->totalFeeAmount)
+                        ->first();
+
+    // If the invoice exists, return a message to avoid duplicate entry
+    if ($existingInvoice) {
+        return response()->json([
+            'message' => 'Invoice already exists',
+            'invoice' => $existingInvoice,
+        ], 409); // 409 Conflict HTTP status code
+    }
+
+    // Create a new invoice
+    $invoice = new Invoice();
+    $invoice->invoice_id = $invoiceId;
+    $invoice->student_id = $request->student_id;
+    $invoice->due_date = $request->due_date;
+    $invoice->issue_date = $issue_date;
+    $invoice->student_name = $request->student_name;
+    $invoice->total_amount = $request->totalFeeAmount;
+    $invoice->notes = $request->note;
+    $invoice->created_at = Carbon::now();
+    $invoice->save();
+
+    // After saving, check if the invoice was saved successfully
+    if ($invoice->id) {
+        // Create the fees for the invoice
+        foreach ($request['fees'] as $fee) {
+            InvoiceFees::create([
+                'invoice_id' => $invoice->id,
+                'name' => $fee['name'],
+                'amount' => $fee['amount'],
+                'fee_id' => $fee['id'],
+                'invoice_uuid' => $invoice->invoice_id,
+            ]);
         }
-        return response()->json(["message" => "error saving invoice"]);
+
+        // Return the newly created invoice
+        return response()->json($invoice, 201); // 201 Created HTTP status code
     }
+
+    return response()->json(["message" => "Error saving invoice"], 500); // 500 Internal Server Error HTTP status code
+}
+
     public function invoiceTemp($id){
         $invoice = InvoiceTemp::find($id);
         $invoice->delete();

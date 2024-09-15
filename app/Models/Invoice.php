@@ -16,4 +16,8 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceFees::class);
     }
+    //has one schedule
+    public function schedule(){
+        return $this->hasOne(Schedule::class);
+    }
 }
