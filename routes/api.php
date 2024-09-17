@@ -84,7 +84,7 @@ Route::get('getSlips', [sampleBetController::class, 'getSlips'])->name('getSlips
 
 
 Route::get('test-endpoint', [OddController::class, 'dudeAwake'])->name('dudeAwake');
-Route::get('refresh-all-cache', [OddController::class, 'deleteCache'])->name('deleteCache');
+// Route::get('refresh-all-cache', [OddController::class, 'deleteCache'])->name('deleteCache');
 Route::get('ordable-index', [OrdableController::class, 'index'])->name('index');
 Route::post('ordable-create', [OrdableController::class, 'create'])->name('create');
 //getEmployersEmployees
@@ -120,6 +120,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('students', [StudentController::class, 'index']);
 Route::get('people', [StudentController::class, 'getPeople']);
 Route::get('count', [StudentController::class, 'countPeople']);
+Route::get('get-student/{id}', [StudentController::class,'showStudent']);
 
 //finance
 Route::get('get-fee-categories', [FinanceController::class, 'getFeeCategory']);
@@ -127,8 +128,9 @@ Route::get('get-fees', [FinanceController::class, 'getFees']);
 Route::get('get-expenditure', [FinanceController::class, 'getExpenditureBudget']);
 Route::post('store-expense', [FinanceController::class,'storeExpense']);
 Route::delete('delete-expense/{id}', [FinanceController::class, 'destroyExpense']);
-Route::get('refresh-all-cache', [FinanceController::class, 'deleteCache']);
+Route::get('refresh-alls-cache', [FinanceController::class, 'deleteCache']);
 Route::post('store-invoice', [FinanceController::class,'storeInvoice']);
+Route::post('get-invoice', [FinanceController::class,'getInvoiceWithStudentId']);
 
 // Route::get('finance/{id}', [FinanceController::class,'show']);
 // Route::post('finance', [FinanceController::class,'store']);
@@ -138,4 +140,4 @@ Route::post('store-invoice', [FinanceController::class,'storeInvoice']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::post('logout', [AuthController::class, 'logout']);
-});
+});    

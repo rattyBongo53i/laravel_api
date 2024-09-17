@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Http\Resources\BetResource;
 use App\Models\MatchGame;
+use App\Models\RoyalStudent;
 use Illuminate\Support\ServiceProvider;
 use App\Observers\MatchObserver;
+use App\Observers\StudentObserver;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -27,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
     {
         BetResource::withoutWrapping();
         MatchGame::observe(MatchObserver::class);
+        RoyalStudent::observe(StudentObserver::class);
     }
 }

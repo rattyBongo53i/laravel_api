@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Person;
+use App\Models\RoyalParent;
+use App\Models\RoyalStudent;
 use Illuminate\Support\Facades\Cache;
-
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -17,11 +20,27 @@ class StudentController extends Controller
     public function index()
     {
         //
-        $students = Cache::remember('students', 350, function () {
-            return Student::latest()->get();
+       $cacheKey = 'students.all';
+
+        // Check if the students are cached, if not fetch from DB and cache them
+        $students = Cache::remember($cacheKey, 60 * 60, function () {
+            // Fetch all students from the database
+            return RoyalStudent::all();
         });
+
+        // Return the cached students
         return response()->json($students);
 
+    }
+    
+    //get student with id
+    public function showStudent($id)
+    {
+        $student = RoyalStudent::find($id);
+        if($student){
+            return response()->json($student);
+        }
+        return response()->json(['message' => 'Student not found'], 404);
     }
 
     public function getPeople(){
@@ -39,6 +58,17 @@ class StudentController extends Controller
            ->get();
         
     }
+    //get all parents from the table parents in the database
+    public function getParents(){
+        return      $cacheKey = 'parents.all';
+
+        // Check if the students are cached, if not fetch from DB and cache them
+        $response = Cache::remember($cacheKey, 60 * 60, function () {
+            // Fetch all students from the database
+            return RoyalParent::all();
+        });
+        return response()->json($response);
+    }
 
         public function countPeople(){
         
@@ -54,6 +84,22 @@ class StudentController extends Controller
            ->count();
         
     }
+    public function get_all_student(){
+        
+         $cacheKey = 'students.all';
+
+        // Check if the students are cached, if not fetch from DB and cache them
+        $students = Cache::remember($cacheKey, 60 * 60, function () {
+            // Fetch all students from the database
+            return RoyalStudent::all();
+        });
+
+        // Return the cached students
+        return response()->json($students);
+        
+    }
+
+    
 
     /**
      * Show the form for creating a new resource.

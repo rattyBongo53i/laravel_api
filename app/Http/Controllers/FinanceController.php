@@ -7,10 +7,10 @@ use App\Models\FeeCategory;
 use App\Models\Fees;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Models\InvoiceTemp;
 use App\Models\InvoiceFees;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -37,7 +37,7 @@ class FinanceController extends Controller
         // return ["category"=> "error"]);
           
         
-        $users = Cache::remember('category_all', 240, function () {
+        $users = Cache::remember('category_all', 60 * 60, function () {
           return $response =  FeeCategory::latest()->get();
         });
          return  response()->json($users);
@@ -50,7 +50,7 @@ class FinanceController extends Controller
     //    return Fees::all();
         // });
              // Join the fees table with the categories table
-              $fee = Cache::remember('fees_all', 340, function () {
+              $fee = Cache::remember('fees_all', 60 * 60, function () {
                return $fees = DB::table('fees')
             ->join('fee_categories', 'fees.category_id', '=', 'fee_categories.id')
             ->select('fees.id','fees.amount', 'fees.name', 'fees.description', 'fees.short_name', 'fee_categories.name as category')
@@ -61,7 +61,7 @@ class FinanceController extends Controller
 
     public function getExpenditureBudget(){
         //
-        return Cache::remember('expenditure', 250, function () {
+        return Cache::remember('expenditure', 60 * 60, function () {
           return  ExpenditureBudget::all();
         });
     }
@@ -179,14 +179,18 @@ public function storeInvoice(Request $request)
         'due_date' => 'required|date|after:today',
     ]);
 
-
-    // if student is null retrun 
-    if ($request->student_id == '' || $request->student_id == null){
-        return response()->json(['message' => 'Student ID is required'], 401);
+// if schedule is null return 
+    if ($request->schedule == '' || $request->schedule == null){
+        return response()->json(['message' => 'Schedule is required'], 401);
     }
 
 
-    // Generate a unique invoice ID using current datetime and hash
+    // if student is null retrun 
+    if ($request->student_id == '' || $request->student_id == null){
+        return response()->json(['message' => 'Student ID is required'], 481);
+    }
+
+    
   if (empty($request->fees) || !is_array($request->fees) || count($request->fees) === 0) {
         return response()->json(['message' => 'no fees added'], 400);
     }
@@ -218,8 +222,12 @@ public function storeInvoice(Request $request)
     $invoice->due_date = $request->due_date;
     $invoice->issue_date = $issue_date;
     $invoice->student_name = $request->student_name;
+    $invoice->initial_total_amount = $request->initialtotalFeeAmount;
     $invoice->total_amount = $request->totalFeeAmount;
     $invoice->notes = $request->note;
+    $invoice->discount = $request->discount;
+    $invoice->schedule= $request->schedule;
+    $invoice->status = $request->status;
     $invoice->created_at = Carbon::now();
     $invoice->save();
 
@@ -286,6 +294,41 @@ public function getLateInvoicesOtherMonth(){
     ->whereMonth('payment_date', Carbon::now()->month)
     ->get();
 
+}
+
+public function getInvoiceWithStudentId(Request $request){
+    
+        // Validate that student_id is always required
+    $validated = $request->validate([
+        'student_id' => 'required|integer',
+        'month' => 'nullable|integer|min:1|max:12', // Ensure the month is valid
+        'status' => 'nullable|string', // Assuming status is a string like "paid", "unpaid"
+        'fee_category' => 'nullable|integer', // Assuming fee_category is an ID
+    ]);
+
+        // Start building the query with required student_id filter
+    $query = Invoice::where('student_id', $request->student_id);
+
+    // Apply the month filter if provided
+    if ($request->has('month')) {
+        // Filter by the month portion of the issue_date field
+        $query->whereMonth('issue_date', $request->month);
+    }
+
+    // Apply the status filter if provided
+    if ($request->has('status')) {
+        $query->where('status', $request->status);
+    }
+
+        // Apply the fee category filter if provided
+    // if ($request->has('fee_category')) {
+    //     $query->where('fee_category_id', $request->fee_category);
+    // }
+
+    // Execute the query and return the result
+    $invoices = $query->get();
+
+    return response()->json($invoices);
 }
 
 }
