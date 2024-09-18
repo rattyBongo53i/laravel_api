@@ -166,4 +166,7 @@ class StudentController extends Controller
     {
         //
     }
+    public function test_api(){
+        return response()->json(["message" => "Student count by age, if u get this api is working"]);
+    }
 }

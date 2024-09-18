@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\BetController;
 use App\Http\Controllers\API\sampleBetController;
 use App\Http\Controllers\API\OddController;
+use App\Http\Controllers\API\MailController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrdableController;
 use App\Http\Controllers\StudentController;
@@ -121,6 +122,7 @@ Route::get('students', [StudentController::class, 'index']);
 Route::get('people', [StudentController::class, 'getPeople']);
 Route::get('count', [StudentController::class, 'countPeople']);
 Route::get('get-student/{id}', [StudentController::class,'showStudent']);
+Route::get('test-endpoint', [StudentController::class,'test_api']);
 
 //finance
 Route::get('get-fee-categories', [FinanceController::class, 'getFeeCategory']);
@@ -135,6 +137,10 @@ Route::get('get-invoices', [FinanceController::class,'getAllInvoices']);
 // Route::post('finance', [FinanceController::class,'store']);
 Route::delete('delete-invoice/{id}', [FinanceController::class, 'deleteInvoice']);
 // Route::put('finance/{id}', [FinanceController::class, 'update']);
+
+
+// send mail
+Route::post('send-mail', [MailController::class,'sendRoyalEmail']);
 
 });
 Route::middleware('auth:sanctum')->group(function () {
