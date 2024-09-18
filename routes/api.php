@@ -10,6 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrdableController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\FinanceController;
+use Illuminate\Support\Facades\Mail;
 // use App\Http\Controllers\Algtransportandlogistics;
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,14 @@ use App\Http\Controllers\FinanceController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+Route::get('/test-email', function () {
+    Mail::raw('This is a test email', function ($message) {
+        $message->to('kojo53i@live.com')
+                ->subject('Test Email from Laravel');
+    });
+
+    return 'Email sent!';
 });
 
 
