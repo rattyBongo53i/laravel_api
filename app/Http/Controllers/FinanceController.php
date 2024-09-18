@@ -244,6 +244,15 @@ public function storeInvoice(Request $request)
             ]);
         }
 
+        /*
+        4714 7313 4479 1974
+        01 / 25
+        741
+        324 Golden ST BOX 859
+        Bernice Osei-Assibey
+
+        */
+
         // Return the newly created invoice
         return response()->json($invoice, 201); // 201 Created HTTP status code
     }
@@ -254,6 +263,13 @@ public function storeInvoice(Request $request)
     public function invoiceTemp($id){
         $invoice = InvoiceTemp::find($id);
         $invoice->delete();
+        return response()->json(['message' => 'invoice deleted successfully']);
+    }
+    public function deleteInvoice($id){
+        $invoice = Invoice::find($id);
+        $invoice->delete();
+        Cache::forget('all_invoices');
+
         return response()->json(['message' => 'invoice deleted successfully']);
     }
 
@@ -330,5 +346,45 @@ public function getInvoiceWithStudentId(Request $request){
 
     return response()->json($invoices);
 }
+    //get all invoices
+    public function getAllInvoices()
+    {
+        $cachekey = "all_invoices";
+        // if (Cache::has($cachekey)) {
+        //     return Cache::get($cachekey);
+        // }
+        // Cache::put($cachekey, Invoice::all(), 60); // Cache for 60 minutes
+        // return Cache::get($cachekey);
+        // $invoices = Invoice::all();
+          $invoices = Cache::remember($cachekey, 60 * 60, function () {
+          return $response =  Invoice::latest()->get();
+        });
+        
+        return response()->json($invoices);
+    }
+
+    //get invoice by id
+    public function getInvoiceById($id)
+    {
+        $invoice = Invoice::find($id);
+        return response()->json($invoice);
+    }
+
+    //get invoice by student id
+    public function getInvoiceByStudentId($student_id)
+    {
+        $invoice = Invoice::where('student_id', $student_id)->first();
+        return response()->json($invoice);
+    }
+
+    //update invoice by id
+    public function updateInvoice(Request $request, $id)
+    {
+        $invoice = Invoice::find($id);
+        $invoice->due_date = $request->due_date;
+        $invoice->issue_date = $request->issue_date;
+        $invoice->student_name = $request->student_name;
+        // $invoice->initial_total_amount =
+    }
 
 }

@@ -131,9 +131,9 @@ Route::delete('delete-expense/{id}', [FinanceController::class, 'destroyExpense'
 Route::get('refresh-alls-cache', [FinanceController::class, 'deleteCache']);
 Route::post('store-invoice', [FinanceController::class,'storeInvoice']);
 Route::post('get-invoice', [FinanceController::class,'getInvoiceWithStudentId']);
-
-// Route::get('finance/{id}', [FinanceController::class,'show']);
+Route::get('get-invoices', [FinanceController::class,'getAllInvoices']);
 // Route::post('finance', [FinanceController::class,'store']);
+Route::delete('delete-invoice/{id}', [FinanceController::class, 'deleteInvoice']);
 // Route::put('finance/{id}', [FinanceController::class, 'update']);
 
 });

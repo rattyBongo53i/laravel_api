@@ -4,6 +4,9 @@ namespace App\Observers;
 
 use App\Models\RoyalStudent;
 use Illuminate\Support\Facades\Cache;
+
+
+
 class StudentObserver
 {
     /**
