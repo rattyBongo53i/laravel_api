@@ -16,7 +16,7 @@ class AddCategoryIdToFeesTable extends Migration
         Schema::table('fees', function (Blueprint $table) {
             //
             $table->unsignedBigInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('categories');
+            $table->foreign('category_id')->references('id')->on('fee_categories');
         });
     }
 
