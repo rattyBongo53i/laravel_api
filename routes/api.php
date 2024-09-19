@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::get('/test-email', function () {
     Mail::raw('This is a test email', function ($message) {
-        $message->to('kojo53i@live.com')
+        $message->to('lyd.tand.01@gmail.com')
                 ->subject('Test Email from Laravel');
     });
 
